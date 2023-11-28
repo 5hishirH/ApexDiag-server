@@ -26,6 +26,12 @@ app.get("/", (req, res) => {
 const handleMongoDB = async () => {
   try {
     const UserCollection = client.db("ApexDiagDB").collection("Users");
+    app.get("/users", async (req, res) => {
+      let query = {};
+      
+      const result = await UserCollection.find(query).toArray();
+      res.send(result);
+    });
 
     app.post("/users", async (req, res) => {
       const newUser = req.body;
@@ -34,6 +40,17 @@ const handleMongoDB = async () => {
       const result = await UserCollection.insertOne(newUser);
       res.send(result);
     });
+
+    app.put("/users/:id", async (req, res) => {
+      const {id} = req.params;
+      const filter = { _id: new ObjectId(id) };
+      // const options = { upsert: true };
+      const updatedProperties = {
+        $set: req.body    // { name, age }
+      }   // {$set: {name, age}}
+      const result = await UserCollection.updateOne(filter, updatedProperties);
+      res.send(result);
+    })
   } finally {
     // await client.close();
   }
