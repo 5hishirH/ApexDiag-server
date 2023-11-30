@@ -34,6 +34,11 @@ const handleMongoDB = async () => {
       const result = await UserCollection.find(query).toArray();
       res.send(result);
     });
+    app.get("/userRole", async (req, res) => {
+      const mail = req.query.email;
+      const result = await UserCollection.findOne({mail});
+      res.send(result);
+    });
 
     app.get("/tests", async (req, res) => {
       let query = {};
