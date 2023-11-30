@@ -26,10 +26,24 @@ app.get("/", (req, res) => {
 const handleMongoDB = async () => {
   try {
     const UserCollection = client.db("ApexDiagDB").collection("Users");
+    const TestCollection = client.db("ApexDiagDB").collection("Tests");
+
     app.get("/users", async (req, res) => {
       let query = {};
-      
       const result = await UserCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get("/tests", async (req, res) => {
+      let query = {};
+      const result = await TestCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get("/tests/:id", async (req, res) => {
+      const { id } = req.params;
+      const query1 = { _id: new ObjectId(id) };
+      const result = await TestCollection.findOne(query1);
       res.send(result);
     });
 
@@ -41,20 +55,45 @@ const handleMongoDB = async () => {
       res.send(result);
     });
 
+    app.post("/tests", async (req, res) => {
+      const newTest = req.body;
+      const result = await TestCollection.insertOne(newTest);
+      res.send(result);
+    });
+
     app.put("/users/:id", async (req, res) => {
-      const {id} = req.params;
+      const { id } = req.params;
       const filter = { _id: new ObjectId(id) };
       // const options = { upsert: true };
       const updatedProperties = {
-        $set: req.body    // { name, age }
-      }   // {$set: {name, age}}
+        $set: req.body, // { name, age }
+      }; // {$set: {name, age}}
       const result = await UserCollection.updateOne(filter, updatedProperties);
       res.send(result);
-    })
+    });
+    
+    app.put("/tests/:id", async (req, res) => {
+      const { id } = req.params;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedProperties = {
+        $set: req.body, // { name, age }
+      }; // {$set: {name, age}}
+      const result = await TestCollection.updateOne(filter, updatedProperties, options);
+      res.send(result);
+    });
+
+    app.delete("/tests/:id", async (req, res) => {
+      const { id } = req.params;
+      const query = { _id: new ObjectId(id) };
+      const result = await TestCollection.deleteOne(query);
+      res.send(result);
+    });
   } finally {
     // await client.close();
   }
 };
+
 handleMongoDB().catch(console.dir);
 
 app.listen(port, () => {
