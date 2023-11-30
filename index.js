@@ -27,6 +27,7 @@ const handleMongoDB = async () => {
   try {
     const UserCollection = client.db("ApexDiagDB").collection("Users");
     const TestCollection = client.db("ApexDiagDB").collection("Tests");
+    const BannerCollection = client.db("ApexDiagDB").collection("Banners");
 
     app.get("/users", async (req, res) => {
       let query = {};
@@ -58,6 +59,13 @@ const handleMongoDB = async () => {
     app.post("/tests", async (req, res) => {
       const newTest = req.body;
       const result = await TestCollection.insertOne(newTest);
+      res.send(result);
+    });
+    
+    app.post("/banners", async (req, res) => {
+      const newBanner = req.body;
+      newBanner.isActive = false;
+      const result = await BannerCollection.insertOne(newBanner);
       res.send(result);
     });
 
