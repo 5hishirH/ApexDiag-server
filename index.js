@@ -40,6 +40,12 @@ const handleMongoDB = async () => {
       const result = await TestCollection.find(query).toArray();
       res.send(result);
     });
+    
+    app.get("/banners", async (req, res) => {
+      let query = {};
+      const result = await BannerCollection.find(query).toArray();
+      res.send(result);
+    });
 
     app.get("/tests/:id", async (req, res) => {
       const { id } = req.params;
@@ -58,6 +64,7 @@ const handleMongoDB = async () => {
 
     app.post("/tests", async (req, res) => {
       const newTest = req.body;
+      newTest.bookedTests = [];
       const result = await TestCollection.insertOne(newTest);
       res.send(result);
     });
@@ -90,11 +97,44 @@ const handleMongoDB = async () => {
       const result = await TestCollection.updateOne(filter, updatedProperties, options);
       res.send(result);
     });
+    
+    app.put("/tests", async (req, res) => {
+      const {id} = req.body;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const email = req.query.email;
+      console.log(email)
+      const updatedProperties = {
+        $push: {bookedTests: email}
+      }
+      const result = await TestCollection.updateOne(query, updatedProperties, options);
+      res.send(result);
+    });
+    
+    app.put("/banners/:id", async (req, res) => {
+      const { id } = req.params;
+      const filter1 = { _id: new ObjectId(id) };
+      const filter2 = { _id: {$ne: new ObjectId(id)} };
+      const options = { upsert: true };
+      const updatedProperties = {
+        $set: {isActive: true}, // { name, age }
+      }; // {$set: {name, age}}
+      const result1 = await BannerCollection.updateOne(filter1, updatedProperties, options);
+      const result2 = await BannerCollection.updateMany(filter2, {$set: {isActive: false}});
+      res.send(result2);
+    });
 
     app.delete("/tests/:id", async (req, res) => {
       const { id } = req.params;
       const query = { _id: new ObjectId(id) };
       const result = await TestCollection.deleteOne(query);
+      res.send(result);
+    });
+    
+    app.delete("/banners/:id", async (req, res) => {
+      const { id } = req.params;
+      const query = { _id: new ObjectId(id) };
+      const result = await BannerCollection.deleteOne(query);
       res.send(result);
     });
   } finally {
